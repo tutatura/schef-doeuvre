@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Schef-d'Œuvre</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg: #fdfcfb; --accent: #1a1a1a; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--accent); padding-bottom: 110px; -webkit-font-smoothing: antialiased; }
+        .serif { font-family: 'Playfair Display', serif; }
+        .book-card { border-radius: 4px 12px 12px 4px; box-shadow: 6px 8px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        .spine { position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: rgba(0,0,0,0.1); z-index: 5; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .progress-bar { height: 6px; background: #eee; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #1a1a1a; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-view { animation: slideIn 0.4s ease-out; }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-10 text-center transition-opacity duration-700">
+        <h1 class="serif text-5xl italic mb-4">Schef-d'Œuvre</h1>
+        <p class="text-[9px] text-gray-400 uppercase tracking-[0.3em] mb-12 italic">"Une archive pour tes voyages immobiles"</p>
+        <button onclick="enterApp()" class="border border-black px-12 py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-500">Entrée dans la Schefatèque</button>
+    </div>
+
+    <div class="max-w-2xl mx-auto p-6">
+        
+        <section id="view-home" class="animate-view">
+            <h2 class="serif text-4xl mb-8 italic text-center md:text-left text-black">Bonjour Schefa,</h2>
+            
+            <div class="mb-10 text-left">
+                <p class="text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-gray-400">Lectures en cours</p>
+                <div id="now-reading-content" class="flex gap-4 overflow-x-auto no-scrollbar pb-4">
+                    </div>
+            </div>
+
+            <div class="bg-black text-white p-10 rounded-[40px] mb-8 shadow-2xl relative text-left">
+                <div class="flex justify-between items-end mb-4">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-widest opacity-60">Objectif 2025</p>
+                        <h3 class="text-3xl font-bold serif italic" id="goal-text">0 / 20 livres</h3>
+                    </div>
+                    <button onclick="openGoalModal()" class="text-[9px] border border-white/30 px-3 py-1 rounded-full italic hover:bg-white hover:text-black transition">Modifier</button>
+                </div>
+                <div class="progress-bar bg-white/20"><div id="goal-fill" class="progress-fill bg-white" style="width: 0%"></div></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-10">
+                <div class="bg-white p-6 rounded-[30px] border border-gray-50 shadow-sm text-center">
+                    <span id="stat-total-pages" class="text-2xl font-bold block text-black">0</span>
+                    <span class="text-[8px] uppercase tracking-widest text-gray-400 font-bold">Pages lues</span>
+                </div>
+                <div class="bg-white p-6 rounded-[30px] border border-gray-50 shadow-sm text-center">
+                    <span id="stat-wishlist-count" class="text-2xl font-bold block text-blue-900">0</span>
+                    <span class="text-[8px] uppercase tracking-widest text-blue-300 font-bold">Wishlist</span>
+                </div>
+                <div class="bg-white p-6 rounded-[30px] border border-gray-50 shadow-sm text-center">
+                    <span id="stat-avg-rating" class="text-2xl font-bold block text-black">0%</span>
+                    <span class="text-[8px] uppercase tracking-widest text-gray-400 font-bold">Coups de cœur</span>
+                </div>
+                <div class="bg-white p-6 rounded-[30px] border border-gray-50 shadow-sm text-center text-black">
+                    <span id="stat-longest-book" class="text-xl font-bold block truncate">—</span>
+                    <span class="text-[8px] uppercase tracking-widest text-gray-400 font-bold">Plus gros record</span>
+                </div>
+            </div>
+
+            <div class="mb-10 text-left">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Livres prêtés</p>
+                    <button onclick="addLoan()" class="text-xs font-bold">+ PRÊTER</button>
+                </div>
+                <div id="loans-list" class="space-y-3"></div>
+            </div>
+        </section>
+
+        <section id="view-lib" class="hidden animate-view text-left">
+            <header class="pt-8 pb-6 flex justify-between items-end">
+                <h1 class="serif text-4xl italic text-black">Archive</h1>
+                <button onclick="openForm()" class="bg-black text-white text-[9px] px-6 py-2 rounded-full font-bold uppercase tracking-widest shadow-lg">+ AJOUTER</button>
+            </header>
+            
+            <div class="flex gap-6 mb-6 overflow-x-auto no-scrollbar border-b">
+                <button onclick="setLibTab('fini')" id="tab-fini" class="text-[10px] font-bold uppercase pb-2">Lus</button>
+                <button onclick="setLibTab('en-cours')" id="tab-en-cours" class="text-[10px] font-bold uppercase text-gray-300 pb-2">En cours</button>
+                <button onclick="setLibTab('pile')" id="tab-pile" class="text-[10px] font-bold uppercase text-gray-300 pb-2">Wishlist</button>
+            </div>
+
+            <div class="flex flex-col gap-4 mb-10">
+                <input type="text" id="searchBar" onkeyup="renderBooks()" placeholder="Rechercher titre, auteur..." class="w-full bg-white border border-gray-100 py-4 px-6 rounded-2xl text-sm outline-none shadow-sm text-black">
+                <div class="flex gap-2 overflow-x-auto no-scrollbar">
+                    <button id="filter-fav" onclick="toggleFavFilter()" class="bg-white text-[9px] uppercase px-4 py-2 rounded-full border border-gray-100 font-bold shadow-sm whitespace-nowrap transition-all hidden">❤️ Coups de cœur</button>
+                    
+                    <select id="filter-genre-lib" onchange="renderBooks()" class="bg-white text-[9px] uppercase px-4 py-2 rounded-full border border-gray-100 font-bold shadow-sm outline-none text-black">
+                        <option value="tous">Tous les genres</option>
+                        <option value="Fantasy">Fantasy</option>
+                        <option value="Thriller">Thriller</option>
+                        <option value="Romance">Romance</option>
+                        <option value="Policier">Policier</option>
+                        <option value="Horreur">Horreur</option>
+                        <option value="Biographie">Biographie</option>
+                    </select>
+
+                    <select id="sort-order-lib" onchange="renderBooks()" class="bg-white text-[9px] uppercase px-4 py-2 rounded-full border border-gray-100 font-bold shadow-sm outline-none text-black">
+                        <option value="recent">Récents</option>
+                        <option value="titre">Titre (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+            <div id="book-list" class="space-y-10"></div>
+        </section>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 glass border-t border-gray-100 flex justify-around p-8 z-50">
+        <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center gap-1"><span class="text-xl">🏠</span><span class="text-[8px] font-bold uppercase">Home</span></button>
+        <button onclick="switchTab('lib')" id="nav-lib" class="flex flex-col items-center gap-1 opacity-30"><span class="text-xl">📚</span><span class="text-[8px] font-bold uppercase">Schefateque</span></button>
+    </nav>
+
+    <div id="form-overlay" class="fixed inset-0 bg-[#fdfcfb] z-[80] hidden overflow-y-auto p-8 text-left">
+        <div class="max-w-md mx-auto">
+            <button onclick="closeForm()" class="text-xs font-bold mb-10 uppercase text-gray-400">← Annuler</button>
+            <h3 class="serif text-3xl mb-8 italic text-black" id="form-title">Nouveau Livre</h3>
+            
+            <div class="mb-8">
+                <p class="text-[9px] uppercase font-bold text-gray-400 mb-2">Statut</p>
+                <select id="status-select" onchange="adaptForm()" class="w-full bg-white p-5 rounded-2xl text-sm border-none shadow-sm outline-none font-semibold text-black">
+                    <option value="fini">📚 Schefateque</option>
+                    <option value="en-cours">📖 je suis entrain de lire</option>
+                    <option value="pile">✨ Je veux </option>
+                </select>
+            </div>
+
+            <div class="mb-8 relative text-black">
+                <input type="text" id="title-input" oninput="fetchSuggestions(this.value)" placeholder="Titre du livre..." class="w-full bg-transparent border-b-2 py-4 text-2xl serif italic outline-none">
+                <div id="suggestions" class="absolute left-0 right-0 bg-white rounded-2xl shadow-xl hidden mt-2 border border-gray-50 overflow-hidden z-[100]"></div>
+            </div>
+
+            <div id="book-details-preview" class="hidden bg-white p-6 rounded-2xl flex gap-6 items-center shadow-sm border border-gray-100 italic text-xs mb-8 text-black"></div>
+
+            <div class="space-y-8">
+                <div id="field-genre">
+                    <p class="text-[9px] uppercase font-bold text-gray-400 mb-2">Genre</p>
+                    <input type="text" id="genre-input" placeholder="Fantasy, Roman..." class="w-full bg-white p-4 rounded-xl text-xs border-none shadow-sm outline-none text-black">
+                </div>
+                <div id="field-source" class="hidden">
+                    <p class="text-[9px] uppercase font-bold text-gray-400 mb-2">D'où vient la recommandation ?</p>
+                    <input type="text" id="source-input" placeholder="Ex: Insta, amie..." class="w-full bg-white p-5 rounded-2xl text-xs border-none shadow-sm outline-none text-black">
+                </div>
+                <div id="field-page" class="hidden">
+                    <p class="text-[9px] uppercase font-bold text-gray-400 mb-2">Page actuelle</p>
+                    <input type="number" id="start-page-input" placeholder="0" class="w-full bg-white p-5 rounded-2xl text-xs border-none shadow-sm outline-none text-black">
+                </div>
+                <div id="archive-fields" class="space-y-8">
+                    <div class="space-y-4 text-black">
+                        <p class="text-[10px] uppercase font-bold text-green-600">Points Positifs</p>
+                        <textarea id="review-input" class="w-full bg-white p-5 rounded-2xl text-xs border-none shadow-sm h-24 outline-none"></textarea>
+                        <p class="text-[10px] uppercase font-bold text-red-600">Points Négatifs</p>
+                        <textarea id="nul-input" class="w-full bg-white p-5 rounded-2xl text-xs border-none shadow-sm h-24 outline-none"></textarea>
+                    </div>
+                    <label class="flex items-center gap-3 cursor-pointer py-2"><input type="checkbox" id="fav-input" class="w-5 h-5 accent-black"> <span class="text-[10px] uppercase font-bold text-black">Coup de cœur ❤️</span></label>
+                </div>
+            </div>
+            <button onclick="saveBook()" class="w-full bg-black text-white py-6 rounded-full mt-10 font-bold uppercase text-[10px] tracking-widest shadow-xl">Enregistrer</button>
+        </div>
+    </div>
+
+    <div id="input-modal" class="fixed inset-0 bg-black/60 z-[120] hidden flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-[30px] p-8 text-center shadow-2xl animate-view">
+            <h4 class="serif text-xl italic mb-6 text-black" id="modal-title">Valeur</h4>
+            <input type="number" id="modal-field" class="w-full bg-gray-50 border-none p-5 rounded-2xl text-center text-xl font-bold mb-6 outline-none text-black">
+            <div class="flex gap-4">
+                <button onclick="closeInputModal()" class="flex-1 text-[10px] uppercase font-bold text-gray-400">Annuler</button>
+                <button id="modal-confirm-btn" class="flex-1 bg-black text-white py-4 rounded-full text-[10px] uppercase font-bold shadow-md">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loan-form-modal" class="fixed inset-0 bg-[#fdfcfb] z-[100] hidden p-8 overflow-y-auto text-center">
+        <button onclick="closeLoanForm()" class="text-xs font-bold mb-10 uppercase text-gray-400">← Annuler</button>
+        <div class="max-w-md mx-auto space-y-6">
+            <h2 class="serif text-3xl italic mb-8 text-black">Prêter un livre</h2>
+            <input type="text" id="loan-book-input" oninput="fetchLoanSuggestions(this.value)" placeholder="Titre..." class="w-full bg-transparent border-b-2 py-4 outline-none serif italic text-xl text-black">
+            <div id="loan-suggestions" class="bg-white rounded-xl shadow-lg hidden text-left z-50 overflow-hidden border border-gray-100"></div>
+            <input type="text" id="loan-who-input" placeholder="À qui ?" class="w-full bg-white p-4 rounded-xl text-xs border shadow-sm outline-none text-black">
+            <input type="file" id="friend-photo-file" accept="image/*" class="hidden" onchange="previewFriendPhoto(this)">
+            <button onclick="document.getElementById('friend-photo-file').click()" class="w-full bg-gray-100 p-4 rounded-xl text-[10px] font-bold uppercase text-black">📷 Photo de l'ami(e)</button>
+            <div id="friend-photo-preview" class="w-20 h-20 rounded-full mx-auto hidden bg-cover bg-center border-2 shadow-md mt-4"></div>
+            <button onclick="saveLoan()" class="w-full bg-black text-white py-6 rounded-full mt-10 font-bold uppercase text-[10px] tracking-widest shadow-xl">Confirmer</button>
+        </div>
+    </div>
+
+    <div id="details-modal" class="fixed inset-0 bg-[#fdfcfb] z-[90] hidden overflow-y-auto"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
