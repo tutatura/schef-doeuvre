@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Schef-d'Œuvre</title>
+    <title>Shef-d'Œuvre</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,15 +26,15 @@
 <body>
 
     <div id="welcome-screen" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-10 text-center transition-opacity duration-700">
-        <h1 class="serif text-5xl italic mb-4">Schef-d'Œuvre</h1>
+        <h1 class="serif text-5xl italic mb-4">Shef-d'Œuvre</h1>
         <p class="text-[9px] text-gray-400 uppercase tracking-[0.3em] mb-12 italic">"Une archive pour tes voyages immobiles"</p>
-        <button onclick="enterApp()" class="border border-black px-12 py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-500">Entrée dans la Schefatèque</button>
+        <button onclick="enterApp()" class="border border-black px-12 py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-500">Entrée dans la Shefatèque</button>
     </div>
 
     <div class="max-w-2xl mx-auto p-6">
         
         <section id="view-home" class="animate-view">
-            <h2 class="serif text-4xl mb-8 italic text-center md:text-left text-black">Bonjour Schefa,</h2>
+            <h2 class="serif text-4xl mb-8 italic text-center md:text-left text-black">Bonjour Shefa,</h2>
             
             <div class="mb-10 text-left">
                 <p class="text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-gray-400">Lectures en cours</p>
@@ -120,7 +120,7 @@
 
     <nav class="fixed bottom-0 left-0 right-0 glass border-t border-gray-100 flex justify-around p-8 z-50">
         <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center gap-1"><span class="text-xl">🏠</span><span class="text-[8px] font-bold uppercase">Home</span></button>
-        <button onclick="switchTab('lib')" id="nav-lib" class="flex flex-col items-center gap-1 opacity-30"><span class="text-xl">📚</span><span class="text-[8px] font-bold uppercase">Schefateque</span></button>
+        <button onclick="switchTab('lib')" id="nav-lib" class="flex flex-col items-center gap-1 opacity-30"><span class="text-xl">📚</span><span class="text-[8px] font-bold uppercase">Shefateque</span></button>
     </nav>
 
     <div id="form-overlay" class="fixed inset-0 bg-[#fdfcfb] z-[80] hidden overflow-y-auto p-8 text-left">
@@ -131,7 +131,7 @@
             <div class="mb-8">
                 <p class="text-[9px] uppercase font-bold text-gray-400 mb-2">Statut</p>
                 <select id="status-select" onchange="adaptForm()" class="w-full bg-white p-5 rounded-2xl text-sm border-none shadow-sm outline-none font-semibold text-black">
-                    <option value="fini">📚 Schefateque</option>
+                    <option value="fini">📚 Shefateque</option>
                     <option value="en-cours">📖 je suis entrain de lire</option>
                     <option value="pile">✨ Je veux </option>
                 </select>
